@@ -1,0 +1,15 @@
+! ** JCreator Workspace File (C)2000
+! ********** DO NOT EDIT *********
+
+VERSION := "1.00"
+LABEL := "SimpleGraphicsInOut"
+
+! Start Project Structure
+#[BeginProject]SOURCE := "SimpleGraphicsInOut.jcp" #[EndProject]
+
+! Start Last Document Structure
+#[BeginFile]SOURCE := "SimpleGraphicsInOut.java" #[EndFile]
+#[BeginFile]SOURCE := "classes\\SimpleGraphicsInOut.htm" #[EndFile]
+
+! Start Last Document Structure
+

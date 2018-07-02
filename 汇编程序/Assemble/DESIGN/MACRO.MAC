@@ -1,0 +1,177 @@
+;MACRO.MAC----Public Macro Define----#
+
+;************ MACRO DEFINE ****************>>>
+;--------------------------------------------(1)
+     display   macro   message
+               mov   ah,09
+               lea   dx,message
+               int   21h
+               endm
+;--------------------------------------------(2)
+     cls       macro
+               mov   ah,6             ;Clear the screen
+               mov   al,0
+               mov   bh,1fh
+               mov   ch,0
+               mov   cl,0
+               mov   dh,24
+               mov   dl,79
+               int   10h
+               mov   ah,2             ;Set cursor to (0,0)
+               mov   bh,0
+               mov   dh,0
+               mov   dl,0
+               int   10h
+               endm
+;-------------------------------------------(2.1)
+     qcls      macro
+               mov   ah,6             ;Clear the screen
+               mov   al,0
+               mov   bh,0fh
+               mov   ch,0
+               mov   cl,0
+               mov   dh,24
+               mov   dl,79
+               int   10h
+               mov   ah,2             ;Set cursor to (0,0)
+               mov   bh,0
+               mov   dh,0
+               mov   dl,0
+               int   10h
+               endm
+;-------------------------------------------(3)
+    pause      macro                  ;Wait for pressing any key
+               mov   ah,07
+               int   21h
+               endm
+;-------------------------------------------(4)
+    input      macro                  ;Accept input for function selection.
+               mov      ah,01
+               int      21h
+               endm
+;-------------------------------------------(5)
+    output     macro    char          ;Output a character
+               mov      dl,char
+               mov      ah,02
+               int      21h
+               endm
+;-------------------------------------------(6)
+    drawCRLF   macro                  ;Print CR-LF
+               mov   dl,0dh
+               mov   ah,02
+               int   21h
+               mov   dl,0ah
+               mov   ah,02
+               int   21h
+               endm
+;-------------------------------------------(7)
+; This macro can delay a certain time in the program.
+
+    waitf      macro                  ;(CX)=Count of 15.08μs
+               local waitf1
+               push  ax
+               push  cx
+               mov   cx,12000         ;(CX)×15.08μs=?sec
+      waitf1:  
+               in    al,61h
+               and   al,10h           ;check PB4
+               cmp   al,ah            ;did it just change
+               je    waitf1           ;wait for change
+               mov   ah,al            ;save the new PB4 status
+               loop  waitf1           ;continue until CX become 0
+               pop   cx
+               pop   ax
+               endm
+;-------------------------------------------(8)
+    readcur    macro                  ;Read cursor position
+               mov   bh,0
+               mov   ah,3
+               int   10h
+               endm
+;-------------------------------------------(9)
+    setcur     macro   row,column       ;Set cursor position
+               mov   ah,2
+               mov   bh,0
+               mov   dh,row
+               mov   dl,column
+               int   10h
+               endm
+;-------------------------------------------(10)
+    hidecur    macro                    ;Hide the cursor
+               mov   ch,16
+               mov   cl,0
+               mov   ah,1
+               int   10h
+               endm
+;-------------------------------------------(11)
+    showcur    macro                    ;Show the cursor
+               mov   ch,0
+               mov   cl,1
+               mov   ah,1
+               int   10h
+               endm
+;-------------------------------------------(12)
+    readname   macro   inbuffer         ;Accept a string from keyboard,
+                                        ;   as the ASCIZ of file,e.g.
+               mov   ah,0ah
+               lea   dx,inbuffer
+               int   21h
+               endm
+;-------------------------------------------(13)
+    animate    macro   premsg,mainmsg,countnum,aftermsg
+               local next_char1,next_char2
+    
+;     此宏实现动画显示提示信息的功能。此宏同时调用了以下
+;     几个宏:
+;           (1)hidecur macro            ;隐藏光标
+;           (2)display macro messge     ;09功能调用，显示字符串
+;           (3)output  macro char       ;02功能调用，显示一个字符
+;           (4)waitf   macro            ;产生一定时间间隔
+;           (5)readcur macro            ;读当前光标位置
+;           (6)setcur  macro row,column ;置光标位置
+;           (7)showcur macro            ;显示光标
+;     各参数含义如下:
+;           (1)premsg:   DB 'string',动画信息前的空格，为对齐界面
+;           (2)mainmsg:  DB 'string',动画的第一遍显示信息
+;           (3)countnum: byte 类型,动画信息字符的长度
+;           (4)aftermsg: DB 'string',动画的第二扁信息，将抹去第一遍的字符
+
+                                        ;This Macro can display message
+               push  ax                 ;  animately
+               push  bx
+               push  cx
+               push  dx
+               push  si
+               
+               hidecur
+               display  premsg
+               mov      cl,countnum
+               mov      ch,0
+               lea      si,mainmsg
+   next_char1: output   [si]
+               inc      si
+               waitf
+               loop     next_char1
+               
+               readcur
+               sub      dl,countnum
+               mov      al,dh
+               mov      bl,dl
+               setcur   al,bl
+               mov      cl,countnum
+               mov      ch,0
+               lea      si,aftermsg
+   next_char2: output   [si]
+               inc      si
+               waitf
+               loop     next_char2
+               showcur
+               
+               pop      si
+               pop      dx
+               pop      cx
+               pop      bx
+               pop      ax
+               endm
+;-------------------------------------------
+;************ MACRO DEFINE ****************<<<
